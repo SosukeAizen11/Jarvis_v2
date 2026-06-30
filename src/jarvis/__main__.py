@@ -1,6 +1,5 @@
-def main() -> None:
-    print("Jarvis v2 is starting...")
-
-
-if __name__ == "__main__":
-    main()
+from .app import Application
+app = Application()
+app.initialize()
+app.run()
+app.shutdown()
