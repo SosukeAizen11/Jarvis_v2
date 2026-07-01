@@ -5,6 +5,7 @@ from jarvis.commands.router import CommandRouter, CommandType
 from jarvis.config.settings import settings
 from jarvis.llm.groq_provider import GroqProvider
 from jarvis.memory.conversation import Conversation
+from jarvis.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ class Application:
     def __init__(self) -> None:
         self.router = CommandRouter()
         self.llm = GroqProvider()
+        self.tools = ToolRegistry()
         self.conversation = Conversation(
             system_prompt=(
                 "You are Jarvis, a professional AI assistant. "
@@ -65,6 +67,11 @@ Anything else will be sent to the AI.
 
             if command == CommandType.CLEAR:
                 os.system("cls" if os.name == "nt" else "clear")
+                continue
+            
+            tool_result = self.tools.execute(prompt)
+            if tool_result is not None:
+                print(f"\nJarvis: {tool_result}")
                 continue
 
             # Only AI chat messages should be stored
