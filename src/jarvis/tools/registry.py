@@ -6,17 +6,21 @@ class ToolRegistry:
     """Stores and executes built-in tools."""
 
     def __init__(self) -> None:
-        self.time_tool = TimeTool()
-        self.calculator_tool = CalculatorTool()
+        self.tools = {
+            "time": TimeTool(),
+            "calc": CalculatorTool(),
+        }
 
     def execute(self, command: str) -> str | None:
-        command = command.strip()
+        parts = command.strip().split(maxsplit=1)
 
-        if command.lower() == "time":
-            return self.time_tool.execute()
+        tool_name = parts[0].lower()
 
-        if command.lower().startswith("calc "):
-            expression = command[5:]
-            return self.calculator_tool.execute(expression)
+        arguments = parts[1] if len(parts) > 1 else ""
 
-        return None
+        tool = self.tools.get(tool_name)
+
+        if tool is None:
+            return None
+
+        return tool.execute(arguments)
