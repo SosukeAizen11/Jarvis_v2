@@ -1,10 +1,113 @@
-# Python-generated files
+# ============================
+# Python
+# ============================
+
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+
+# Compiled extensions
+*.so
+
+# Distribution / packaging
 build/
 dist/
-wheels/
-*.egg-info
+*.egg-info/
+.eggs/
+*.egg
 
-# Virtual environments
-.venv
+# ============================
+# Virtual Environments
+# ============================
+
+.venv/
+venv/
+env/
+ENV/
+
+# Python version file (keep if your team wants to pin Python)
+# .python-version
+
+# ============================
+# Environment Variables
+# ============================
+
+.env
+.env.*
+!.env.example
+
+# ============================
+# Logs
+# ============================
+
+*.log
+logs/
+
+# ============================
+# Testing
+# ============================
+
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ============================
+# Type Checkers
+# ============================
+
+.mypy_cache/
+.pyre/
+.pytype/
+
+# ============================
+# Linters
+# ============================
+
+.ruff_cache/
+
+# ============================
+# Jupyter
+# ============================
+
+.ipynb_checkpoints/
+
+# ============================
+# IDEs
+# ============================
+
+.vscode/
+.idea/
+
+# ============================
+# Operating System Files
+# ============================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================
+# Local Databases
+# ============================
+
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================
+# Temporary Files
+# ============================
+
+*.tmp
+*.temp
+
+# ============================
+# AI / Model Files (Optional)
+# ============================
+
+models/
+checkpoints/
+*.bin
+*.gguf
+*.safetensors
