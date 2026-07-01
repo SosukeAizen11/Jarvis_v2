@@ -1,5 +1,7 @@
 import logging
+import os
 
+from jarvis.commands.router import CommandRouter, CommandType
 from jarvis.config.settings import settings
 from jarvis.llm.groq_provider import GroqProvider
 from jarvis.memory.conversation import Conversation
@@ -11,8 +13,8 @@ class Application:
     """Coordinates the startup and lifecycle of the Jarvis application."""
 
     def __init__(self) -> None:
+        self.router = CommandRouter()
         self.llm = GroqProvider()
-
         self.conversation = Conversation(
             system_prompt=(
                 "You are Jarvis, a professional AI assistant. "
@@ -32,6 +34,7 @@ class Application:
 
         print("=" * 50)
         print("🤖 Jarvis v2")
+        print("Type 'help' to see available commands.")
         print("Type 'exit' to quit.")
         print("=" * 50)
 
@@ -41,9 +44,30 @@ class Application:
             if not prompt.strip():
                 continue
 
-            if prompt.lower() in ("exit", "quit"):
+            command = self.router.route(prompt)
+
+            if command == CommandType.EXIT:
                 break
 
+            if command == CommandType.HELP:
+                print(
+                    """
+Available Commands
+------------------
+help    - Show available commands
+clear   - Clear the terminal
+exit    - Exit Jarvis
+
+Anything else will be sent to the AI.
+"""
+                )
+                continue
+
+            if command == CommandType.CLEAR:
+                os.system("cls" if os.name == "nt" else "clear")
+                continue
+
+            # Only AI chat messages should be stored
             self.conversation.add_user_message(prompt)
 
             try:
@@ -55,7 +79,7 @@ class Application:
 
                 print(f"\nJarvis: {response}")
 
-            except Exception as e:
+            except Exception:
                 logger.exception("Failed to generate response")
                 print("\nJarvis: Sorry, something went wrong.")
 
