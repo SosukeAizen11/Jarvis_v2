@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "A modular AI assistant built to learn professional software engineering and AI engineering."
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pydantic-settings>=2.14.2",
+]
 
 [build-system]
 requires = ["hatchling"]
