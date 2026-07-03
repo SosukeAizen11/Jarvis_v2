@@ -8,6 +8,8 @@ class Settings(BaseSettings):
 
     default_model: str = "llama-3.3-70b-versatile"
 
+    llm_provider: str = "groq"
+    
     log_level: str = "INFO"
 
     debug: bool = False

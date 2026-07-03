@@ -3,7 +3,7 @@ import os
 
 from jarvis.commands.router import CommandRouter, CommandType
 from jarvis.config.settings import settings
-from jarvis.llm.groq_provider import GroqProvider
+from jarvis.llm.factory import LLMFactory
 from jarvis.memory.conversation import Conversation
 from jarvis.tools.registry import ToolRegistry
 
@@ -15,7 +15,7 @@ class Application:
 
     def __init__(self) -> None:
         self.router = CommandRouter()
-        self.llm = GroqProvider()
+        self.llm = LLMFactory.create()
         self.tools = ToolRegistry()
         self.conversation = Conversation(
             system_prompt=(
