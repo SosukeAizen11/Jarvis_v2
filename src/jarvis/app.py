@@ -17,7 +17,7 @@ class Application:
     def __init__(self) -> None:
         self.router = CommandRouter()
         self.llm = LLMFactory.create()
-        self.tools = ToolRegistry()
+        self.tool_registry = ToolRegistry()
         self.conversation = Conversation(
             system_prompt=(
                 "You are Jarvis, a professional AI assistant. "
@@ -27,6 +27,7 @@ class Application:
         self.chat_service = ChatService(
             llm=self.llm,
             conversation=self.conversation,
+            tools = self.tool_registry,
         )
 
     def initialize(self) -> None:
@@ -74,7 +75,7 @@ Anything else will be sent to the AI.
                 os.system("cls" if os.name == "nt" else "clear")
                 continue
             
-            tool_result = self.tools.execute(prompt)
+            tool_result = self.tool_registry.execute(prompt)
             if tool_result is not None:
                 print(f"\nJarvis: {tool_result}")
                 continue

@@ -9,14 +9,19 @@ class GroqProvider(BaseLLM):
     def __init__(self) -> None:
         self.client = Groq(api_key=settings.groq_api_key)
 
-    def chat(self, messages: list[dict]) -> str:
+    def chat(
+        self,
+        messages: list[dict],
+        tools: list[dict] | None = None,
+    ):
         try:
-            
             response = self.client.chat.completions.create(
                 model=settings.default_model,
                 messages=messages,
+                tools=tools,
             )
-            return response.choices[0].message.content
-        
+
+            return response.choices[0].message
+
         except Exception as e:
             return f"Error: {e}"

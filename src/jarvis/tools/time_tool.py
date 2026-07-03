@@ -12,6 +12,13 @@ class TimeTool(BaseTool):
     @property
     def description(self) -> str:
         return "Returns the current system time."
+    
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {},
+        }
 
     def execute(self, arguments: str = "") -> str:
         return datetime.now().strftime("%I:%M:%S %p")

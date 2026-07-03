@@ -18,11 +18,24 @@ class CalculatorTool(BaseTool):
 
     @property
     def name(self) -> str:
-        return "calc"
+        return "calculator"
 
     @property
     def description(self) -> str:
         return "Performs basic arithmetic calculations."
+    
+    @property
+    def parameters(self) -> dict:
+        return {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "The mathematical expression to evaluate.",
+                }
+            },
+            "required": ["expression"],
+        }
 
     def execute(self, arguments: str = "") -> str:
         """Evaluate a mathematical expression safely."""

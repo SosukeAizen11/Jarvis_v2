@@ -8,8 +8,11 @@ class ToolRegistry:
     def __init__(self) -> None:
         self.tools = {
             "time": TimeTool(),
-            "calc": CalculatorTool(),
+            "calculator": CalculatorTool(),
         }
+        
+    def get_tools(self) -> list:
+        return list(self.tools.values())
 
     def execute(self, command: str) -> str | None:
         parts = command.strip().split(maxsplit=1)
