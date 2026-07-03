@@ -1,9 +1,9 @@
 from groq import Groq
 
 from jarvis.config.settings import settings
+from jarvis.llm.base import BaseLLM
 
-
-class GroqProvider:
+class GroqProvider(BaseLLM):
     """Handles communication with the Groq API."""
 
     def __init__(self) -> None:
