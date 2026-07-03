@@ -6,6 +6,7 @@ from jarvis.config.settings import settings
 from jarvis.llm.factory import LLMFactory
 from jarvis.memory.conversation import Conversation
 from jarvis.tools.registry import ToolRegistry
+from jarvis.services.chat_service import ChatService
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,10 @@ class Application:
                 "You are Jarvis, a professional AI assistant. "
                 "Be helpful, concise, and friendly."
             )
+        )
+        self.chat_service = ChatService(
+            llm=self.llm,
+            conversation=self.conversation,
         )
 
     def initialize(self) -> None:
@@ -75,20 +80,16 @@ Anything else will be sent to the AI.
                 continue
 
             # Only AI chat messages should be stored
-            self.conversation.add_user_message(prompt)
-
             try:
-                response = self.llm.chat(
-                    self.conversation.get_messages()
-                )
-
-                self.conversation.add_assistant_message(response)
+                response = self.chat_service.chat(prompt)
 
                 print(f"\nJarvis: {response}")
 
             except Exception:
                 logger.exception("Failed to generate response")
                 print("\nJarvis: Sorry, something went wrong.")
+
+            
 
     def shutdown(self) -> None:
         logger.info("Shutting down application...")
