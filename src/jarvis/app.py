@@ -5,8 +5,8 @@ from jarvis.commands.router import CommandRouter, CommandType
 from jarvis.config.settings import settings
 from jarvis.llm.factory import LLMFactory
 from jarvis.memory.conversation import Conversation
-from jarvis.tools.registry import ToolRegistry
 from jarvis.services.chat_service import ChatService
+from jarvis.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class Application:
         self.chat_service = ChatService(
             llm=self.llm,
             conversation=self.conversation,
-            tools = self.tool_registry,
+            tools=self.tool_registry,
         )
 
     def initialize(self) -> None:
@@ -74,23 +74,23 @@ Anything else will be sent to the AI.
             if command == CommandType.CLEAR:
                 os.system("cls" if os.name == "nt" else "clear")
                 continue
-            
+
             tool_result = self.tool_registry.execute(prompt)
             if tool_result is not None:
                 print(f"\nJarvis: {tool_result}")
                 continue
 
-            # Only AI chat messages should be stored
             try:
-                response = self.chat_service.chat(prompt)
+                print("\nJarvis: ", end="", flush=True)
 
-                print(f"\nJarvis: {response}")
+                for chunk in self.chat_service.stream_chat(prompt):
+                    print(chunk, end="", flush=True)
+
+                print()
 
             except Exception:
                 logger.exception("Failed to generate response")
                 print("\nJarvis: Sorry, something went wrong.")
-
-            
 
     def shutdown(self) -> None:
         logger.info("Shutting down application...")

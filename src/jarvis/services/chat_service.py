@@ -1,4 +1,5 @@
 import json
+from collections.abc import Generator
 
 from jarvis.llm.base import BaseLLM
 from jarvis.memory.conversation import Conversation
@@ -19,17 +20,17 @@ class ChatService:
         self.tools = tools
 
     def chat(self, prompt: str) -> str:
-        
+
         self.conversation.add_user_message(prompt)
-        
+
         tool_definitions = [
             tool.to_groq_tool()
             for tool in self.tools.get_tools()
         ]
-        
+
         response = self.llm.chat(
             self.conversation.get_messages(),
-            tools = tool_definitions,
+            tools=tool_definitions,
         )
 
         if response.tool_calls:
@@ -53,7 +54,22 @@ class ChatService:
                 print(result)
 
                 return result
-        
+
         self.conversation.add_assistant_message(response.content)
 
         return response.content
+
+    def stream_chat(self, prompt: str) -> Generator[str, None, None]:
+        """Stream a normal AI response."""
+
+        self.conversation.add_user_message(prompt)
+
+        full_response = ""
+
+        for chunk in self.llm.stream(
+            self.conversation.get_messages()
+        ):
+            full_response += chunk
+            yield chunk
+
+        self.conversation.add_assistant_message(full_response)

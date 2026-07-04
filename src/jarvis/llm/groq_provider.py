@@ -1,7 +1,10 @@
+from collections.abc import Generator
+
 from groq import Groq
 
 from jarvis.config.settings import settings
 from jarvis.llm.base import BaseLLM
+
 
 class GroqProvider(BaseLLM):
     """Handles communication with the Groq API."""
@@ -14,14 +17,31 @@ class GroqProvider(BaseLLM):
         messages: list[dict],
         tools: list[dict] | None = None,
     ):
-        try:
-            response = self.client.chat.completions.create(
-                model=settings.default_model,
-                messages=messages,
-                tools=tools,
-            )
+        response = self.client.chat.completions.create(
+            model=settings.default_model,
+            messages=messages,
+            tools=tools,
+        )
 
-            return response.choices[0].message
+        return response.choices[0].message
 
-        except Exception as e:
-            return f"Error: {e}"
+    def stream(
+        self,
+        messages: list[dict],
+        tools: list[dict] | None = None,
+    ):
+        response = self.client.chat.completions.create(
+            model=settings.default_model,
+            messages=messages,
+            tools=tools,
+            stream=True,
+        )
+
+        for chunk in response:
+            if not chunk.choices:
+                continue
+
+            delta = chunk.choices[0].delta
+
+            if delta.content:
+                yield delta.content
