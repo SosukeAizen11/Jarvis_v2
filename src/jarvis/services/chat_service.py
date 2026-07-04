@@ -54,6 +54,6 @@ class ChatService:
 
                 return result
         
-        self.conversation.add_assistant_message(response)
+        self.conversation.add_assistant_message(response.content)
 
-        return response
+        return response.content
