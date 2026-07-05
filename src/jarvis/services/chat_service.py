@@ -19,8 +19,10 @@ class ChatService:
         self.conversation = conversation
         self.tools = tools
 
-    def chat(self, prompt: str) -> str:
+    def chat(self, prompt: str) -> Generator[str, None, None]:
+        """Handle a user prompt and yield the response."""
 
+        # Store the user's message once.
         self.conversation.add_user_message(prompt)
 
         tool_definitions = [
@@ -33,6 +35,7 @@ class ChatService:
             tools=tool_definitions,
         )
 
+        # Tool calling path
         if response.tool_calls:
 
             tool_call = response.tool_calls[0]
@@ -51,19 +54,12 @@ class ChatService:
                     tool_name
                 ].execute(expression)
 
-                print(result)
+                self.conversation.add_assistant_message(result)
 
-                return result
+                yield result
+                return
 
-        self.conversation.add_assistant_message(response.content)
-
-        return response.content
-
-    def stream_chat(self, prompt: str) -> Generator[str, None, None]:
-        """Stream a normal AI response."""
-
-        self.conversation.add_user_message(prompt)
-
+        # Streaming path
         full_response = ""
 
         for chunk in self.llm.stream(

@@ -83,7 +83,7 @@ Anything else will be sent to the AI.
             try:
                 print("\nJarvis: ", end="", flush=True)
 
-                for chunk in self.chat_service.stream_chat(prompt):
+                for chunk in self.chat_service.chat(prompt):
                     print(chunk, end="", flush=True)
 
                 print()
