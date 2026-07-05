@@ -1,7 +1,14 @@
+from jarvis.memory.repository import ConversationRepository
+
+
 class Conversation:
-    """Stores the current conversation history."""
+    """Stores and manages the conversation history."""
 
     def __init__(self, system_prompt: str):
+        self.repository = ConversationRepository()
+
+        stored_messages = self.repository.load_messages()
+
         self.messages = [
             {
                 "role": "system",
@@ -9,12 +16,19 @@ class Conversation:
             }
         ]
 
+        self.messages.extend(stored_messages)
+
     def add_user_message(self, message: str) -> None:
         self.messages.append(
             {
                 "role": "user",
                 "content": message,
             }
+        )
+
+        self.repository.save_message(
+            role="user",
+            content=message,
         )
 
     def add_assistant_message(self, message: str) -> None:
@@ -25,5 +39,21 @@ class Conversation:
             }
         )
 
+        self.repository.save_message(
+            role="assistant",
+            content=message,
+        )
+
     def get_messages(self) -> list[dict]:
         return self.messages
+
+    def clear(self) -> None:
+        """Clear the current conversation."""
+
+        self.messages = [self.messages[0]]
+        self.repository.clear()
+
+    def close(self) -> None:
+        """Close any resources owned by the conversation."""
+
+        self.repository.close()

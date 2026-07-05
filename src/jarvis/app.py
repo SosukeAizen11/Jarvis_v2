@@ -46,51 +46,55 @@ class Application:
         print("Type 'exit' to quit.")
         print("=" * 50)
 
-        while True:
-            prompt = input("\nYou: ")
+        try: 
+            while True:
+                prompt = input("\nYou: ")
 
-            if not prompt.strip():
-                continue
+                if not prompt.strip():
+                    continue
 
-            command = self.router.route(prompt)
+                command = self.router.route(prompt)
 
-            if command == CommandType.EXIT:
-                break
+                if command == CommandType.EXIT:
+                    break
 
-            if command == CommandType.HELP:
-                print(
-                    """
-Available Commands
-------------------
-help    - Show available commands
-clear   - Clear the terminal
-exit    - Exit Jarvis
+                if command == CommandType.HELP:
+                    print(
+                        """
+                        Available Commands
+                        ------------------
+                        help    - Show available commands
+                        clear   - Clear the terminal
+                        exit    - Exit Jarvis
 
-Anything else will be sent to the AI.
-"""
-                )
-                continue
+                        Anything else will be sent to the AI.
+                        """
+                    )
+                    continue
 
-            if command == CommandType.CLEAR:
-                os.system("cls" if os.name == "nt" else "clear")
-                continue
+                if command == CommandType.CLEAR:
+                    os.system("cls" if os.name == "nt" else "clear")
+                    continue
 
-            tool_result = self.tool_registry.execute(prompt)
-            if tool_result is not None:
-                print(f"\nJarvis: {tool_result}")
-                continue
+                tool_result = self.tool_registry.execute(prompt)
+                if tool_result is not None:
+                    print(f"\nJarvis: {tool_result}")
+                    continue
 
-            try:
-                print("\nJarvis: ", end="", flush=True)
+                try:
+                    print("\nJarvis: ", end="", flush=True)
 
-                for chunk in self.chat_service.chat(prompt):
-                    print(chunk, end="", flush=True)
+                    for chunk in self.chat_service.chat(prompt):
+                        print(chunk, end="", flush=True)
 
-                print()
+                    print()
 
-            except Exception:
-                logger.exception("Failed to generate response")
-                print("\nJarvis: Sorry, something went wrong.")
+                except Exception:
+                    logger.exception("Failed to generate response")
+                    print("\nJarvis: Sorry, something went wrong.")
+        finally:
+            self.shutdown()
 
     def shutdown(self) -> None:
         logger.info("Shutting down application...")
+        self.conversation.close()
