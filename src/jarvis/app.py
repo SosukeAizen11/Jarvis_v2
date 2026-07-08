@@ -7,6 +7,8 @@ from jarvis.llm.factory import LLMFactory
 from jarvis.memory.conversation import Conversation
 from jarvis.services.chat_service import ChatService
 from jarvis.tools.registry import ToolRegistry
+from jarvis.services.embedding_service import EmbeddingService
+from jarvis.memory.semantic_memory import SemanticMemory
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +26,15 @@ class Application:
                 "Be helpful, concise, and friendly."
             )
         )
+        self.embedding_service = EmbeddingService()
+        self.semantic_memory = SemanticMemory(
+            self.embedding_service
+        )
         self.chat_service = ChatService(
             llm=self.llm,
             conversation=self.conversation,
             tools=self.tool_registry,
+            semantic_memory=self.semantic_memory,
         )
 
     def initialize(self) -> None:
