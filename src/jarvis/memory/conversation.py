@@ -47,6 +47,20 @@ class Conversation:
     def get_messages(self) -> list[dict]:
         return self.messages
 
+    def get_recent_messages(
+        self,
+        limit: int = 10,
+    ) -> list[dict]:
+        """
+        Return the system prompt and the most recent messages.
+        """
+        system_prompt = self.messages[0]
+        recent_messages = self.messages[-limit:]
+        return [
+            system_prompt,
+            *recent_messages,
+        ]
+
     def clear(self) -> None:
         """Clear the current conversation."""
 

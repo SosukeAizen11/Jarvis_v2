@@ -1,6 +1,7 @@
 import json
 from collections.abc import Generator
 
+from jarvis.builders.prompt_builder import PromptBuilder
 from jarvis.llm.base import BaseLLM
 from jarvis.memory.conversation import Conversation
 from jarvis.memory.semantic_memory import SemanticMemory
@@ -21,8 +22,18 @@ class ChatService:
         self.conversation = conversation
         self.tools = tools
         self.semantic_memory = semantic_memory
-        
-    def _should_enable_tools(self, prompt: str) -> bool:
+
+        self.prompt_builder = PromptBuilder(
+            conversation=conversation,
+            semantic_memory=semantic_memory,
+        )
+
+    def _should_enable_tools(
+        self,
+        prompt: str,
+    ) -> bool:
+        """Return True if the prompt is likely requesting a tool."""
+
         prompt = prompt.lower()
 
         tool_keywords = [
@@ -36,41 +47,39 @@ class ChatService:
             "time",
         ]
 
-        return any(keyword in prompt for keyword in tool_keywords)
+        return any(
+            keyword in prompt
+            for keyword in tool_keywords
+        )
 
-    def chat(self, prompt: str) -> Generator[str, None, None]:
+    def chat(
+        self,
+        prompt: str,
+    ) -> Generator[str, None, None]:
         """Handle a user prompt and yield the response."""
 
         # Store conversation history
         self.conversation.add_user_message(prompt)
-        # Search for relevant memories
-        relevant_memories = self.semantic_memory.search(prompt)
+
+        # Build the final prompt
+        messages = self.prompt_builder.build(prompt)
+        
+        # TO SEE THE PROMPT SEND TO THE LLM
+        # print("\n" + "=" * 60)
+        # print("PROMPT SENT TO THE LLM")
+        # print("=" * 60)
+
+        # for i, message in enumerate(messages, start=1):
+        #     print(f"\n[{i}] ROLE: {message['role'].upper()}")
+        #     print(message["content"])
+
+        # print("=" * 60 + "\n")
+        
         # Store semantic memory
         self.semantic_memory.add(prompt)
-        
-
-        messages = self.conversation.get_messages().copy()
-
-        if relevant_memories:
-
-            memory_context = "\n".join(
-                f"- {memory.text}"
-                for memory in relevant_memories
-            )
-
-            messages.insert(
-                1,
-                {
-                    "role": "system",
-                    "content": (
-                        "Relevant memories:\n"
-                        f"{memory_context}"
-                    ),
-                },
-            )
 
         tool_definitions = None
-        
+
         if self._should_enable_tools(prompt):
             tool_definitions = [
                 tool.to_groq_tool()
@@ -101,7 +110,9 @@ class ChatService:
                     tool_name
                 ].execute(expression)
 
-                self.conversation.add_assistant_message(result)
+                self.conversation.add_assistant_message(
+                    result
+                )
 
                 yield result
                 return
@@ -113,4 +124,6 @@ class ChatService:
             full_response += chunk
             yield chunk
 
-        self.conversation.add_assistant_message(full_response)
+        self.conversation.add_assistant_message(
+            full_response
+        )
