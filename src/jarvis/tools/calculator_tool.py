@@ -67,3 +67,13 @@ class CalculatorTool(BaseTool):
             return operator_func(left, right)
 
         raise ValueError("Unsupported expression.")
+    
+    def execute_from_arguments(
+        self,
+        arguments: dict,
+    ) -> str:
+        """Execute from LLM tool arguments."""
+
+        expression = arguments["expression"]
+
+        return self.execute(expression)

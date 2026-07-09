@@ -22,3 +22,11 @@ class TimeTool(BaseTool):
 
     def execute(self, arguments: str = "") -> str:
         return datetime.now().strftime("%I:%M:%S %p")
+    
+    def execute_from_arguments(
+        self,
+        arguments: dict,
+    ) -> str:
+        """Execute from LLM tool arguments."""
+
+        return self.execute("")

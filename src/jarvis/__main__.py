@@ -9,7 +9,6 @@ def main() -> None:
 
     app.initialize()
     app.run()
-    app.shutdown()
 
 
 if __name__ == "__main__":

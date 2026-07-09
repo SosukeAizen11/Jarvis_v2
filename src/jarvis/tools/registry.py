@@ -1,5 +1,6 @@
 from jarvis.tools.calculator_tool import CalculatorTool
 from jarvis.tools.time_tool import TimeTool
+from jarvis.tools.web_search_tool import WebSearchTool
 
 
 class ToolRegistry:
@@ -9,6 +10,7 @@ class ToolRegistry:
         self.tools = {
             "time": TimeTool(),
             "calculator": CalculatorTool(),
+            "web_search": WebSearchTool(),
         }
         
     def get_tools(self) -> list:
@@ -27,3 +29,19 @@ class ToolRegistry:
             return None
 
         return tool.execute(arguments)
+
+    def execute_tool_call(
+        self,
+        tool_name: str,
+        arguments: dict,
+    ):
+        """Execute a tool requested by the LLM."""
+
+        tool = self.tools.get(tool_name)
+
+        if tool is None:
+            raise ValueError(
+                f"Unknown tool: {tool_name}"
+            )
+
+        return tool.execute_from_arguments(arguments)

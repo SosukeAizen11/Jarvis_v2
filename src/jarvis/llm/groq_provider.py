@@ -12,17 +12,35 @@ class GroqProvider(BaseLLM):
     def __init__(self) -> None:
         self.client = Groq(api_key=settings.groq_api_key)
 
+    def _build_kwargs(
+        self,
+        messages: list[dict],
+        tools: list[dict] | None = None,
+        stream: bool = False,
+    ) -> dict:
+        """Build the kwargs for the Groq API call."""
+
+        kwargs = {
+            "model": settings.default_model,
+            "messages": messages,
+        }
+
+        if tools:
+            kwargs["tools"] = tools
+            kwargs["tool_choice"] = "auto"
+
+        if stream:
+            kwargs["stream"] = True
+
+        return kwargs
+
     def chat(
         self,
         messages: list[dict],
         tools: list[dict] | None = None,
     ):
-        response = self.client.chat.completions.create(
-            model=settings.default_model,
-            messages=messages,
-            tools=tools,
-        )
-
+        kwargs = self._build_kwargs(messages, tools)
+        response = self.client.chat.completions.create(**kwargs)
         return response.choices[0].message
 
     def stream(
@@ -30,12 +48,8 @@ class GroqProvider(BaseLLM):
         messages: list[dict],
         tools: list[dict] | None = None,
     ):
-        response = self.client.chat.completions.create(
-            model=settings.default_model,
-            messages=messages,
-            tools=tools,
-            stream=True,
-        )
+        kwargs = self._build_kwargs(messages, tools, stream=True)
+        response = self.client.chat.completions.create(**kwargs)
 
         for chunk in response:
             if not chunk.choices:

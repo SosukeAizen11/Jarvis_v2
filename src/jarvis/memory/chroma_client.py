@@ -1,12 +1,16 @@
 import chromadb
+from pathlib import Path
 
 
 class ChromaClient:
     """Creates and manages the ChromaDB client."""
 
     def __init__(self) -> None:
+        project_root = Path(__file__).resolve().parents[3]
+        chroma_path = project_root / "data" / "chroma"
+        
         self.client = chromadb.PersistentClient(
-            path="data/chroma"
+            path=str(chroma_path)
         )
 
     def get_collection(self):

@@ -5,8 +5,10 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
 
     groq_api_key: str
+    
+    tavily_api_key: str
 
-    default_model: str = "llama-3.3-70b-versatile"
+    default_model: str = "qwen/qwen3-32b"
 
     llm_provider: str = "groq"
     
