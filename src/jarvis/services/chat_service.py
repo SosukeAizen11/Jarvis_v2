@@ -171,6 +171,14 @@ class ChatService:
                         "content": tool_content,
                     }
                 )
+            
+            # FOLLOW UP MESSAGE BEFORE SENDING TO THE 2ND LLM CALL. 
+            # print("\n===== FOLLOWUP MESSAGES =====")
+            # for i, message in enumerate(followup_messages, start=1):
+            #     print(f"\n[{i}] {message['role'].upper()}")
+            #     print(message)
+            # print("=============================\n")
+
 
             # Final LLM call with all tool results.
             full_response = ""
