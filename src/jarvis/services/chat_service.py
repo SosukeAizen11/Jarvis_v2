@@ -81,24 +81,29 @@ class ChatService:
         # Store semantic memory
         self.semantic_memory.add(prompt)
 
-        plan = self.planner.plan(prompt)
+        plans = self.planner.plan(prompt)
+        print(plans)
 
-        tool_definitions = None
+        tool_definitions = []
+        
+        for plan in plans:
+            if plan == Plan.CALCULATOR:
+                tool_definitions.append(
+                    self.tools.tools["calculator"].to_groq_tool()
+                )
 
-        if plan == Plan.CALCULATOR:
-            tool_definitions = [
-                self.tools.tools["calculator"].to_groq_tool()
-            ]
+            elif plan == Plan.TIME:
+                tool_definitions.append(
+                    self.tools.tools["time"].to_groq_tool()
+                )
 
-        elif plan == Plan.TIME:
-            tool_definitions = [
-                self.tools.tools["time"].to_groq_tool()
-            ]
-
-        elif plan == Plan.WEB_SEARCH:
-            tool_definitions = [
-                self.tools.tools["web_search"].to_groq_tool()
-            ]
+            elif plan == Plan.WEB_SEARCH:
+                tool_definitions.append(
+                    self.tools.tools["web_search"].to_groq_tool()
+                )
+                
+        if not tool_definitions:
+            tool_definitions = None
             
         # print(f"Planner selected: {plan}")
         # print(f"Tool definitions: {tool_definitions}")
@@ -107,31 +112,16 @@ class ChatService:
             messages,
             tools=tool_definitions,
         )
+        
+        print(response.tool_calls)
 
+        
         # Tool Calling
         if response.tool_calls:
-            tool_call = response.tool_calls[0]
-            tool_name = tool_call.function.name
-            arguments = json.loads(
-                tool_call.function.arguments
-            )
-            result = self.tools.execute_tool_call(
-                tool_name,
-                arguments,
-            )
 
-            # Feed the tool result back to the LLM
-            # so it can generate a natural-language answer.
-            if tool_name == "web_search":
-                tool_content = self.search_formatter.format(result)
-            else:
-                tool_content = self._truncate_tool_result(result)       
-
-            # Build a slim message list for the 2nd call
-            # to stay within token limits.
-            
             followup_messages = messages.copy()
 
+            # Add the assistant message containing ALL tool calls.
             followup_messages.append(
                 {
                     "role": "assistant",
@@ -145,28 +135,56 @@ class ChatService:
                                 "arguments": tool_call.function.arguments,
                             },
                         }
+                        for tool_call in response.tool_calls
                     ],
                 }
             )
 
-            followup_messages.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "content": tool_content,
-                }
-            )
+            # Execute every tool requested by the model.
+            for tool_call in response.tool_calls:
 
-            # Stream the LLM's summarized response
+                tool_name = tool_call.function.name
+
+                arguments = json.loads(
+                    tool_call.function.arguments
+                )
+
+                result = self.tools.execute_tool_call(
+                    tool_name,
+                    arguments,
+                )
+                print(f"Tool executed {tool_name}")
+
+                if tool_name == "web_search":
+                    tool_content = self.search_formatter.format(
+                        result
+                    )
+                else:
+                    tool_content = self._truncate_tool_result(
+                        result
+                    )
+
+                followup_messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": tool_content,
+                    }
+                )
+
+            # Final LLM call with all tool results.
             full_response = ""
 
-            for chunk in self.llm.stream(followup_messages):
+            for chunk in self.llm.stream(
+                followup_messages
+            ):
                 full_response += chunk
                 yield chunk
 
             self.conversation.add_assistant_message(
                 full_response
             )
+
             return
 
         # Stream normal response (no tool was called)

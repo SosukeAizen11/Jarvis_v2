@@ -6,16 +6,23 @@ class Plan(Enum):
     CALCULATOR = "calculator"
     TIME = "time"
     WEB_SEARCH = "web_search"
-    
+
+
 class Planner:
-    """Decides how Jarvis should answer a question."""
+    """Decides which tools Jarvis should use."""
 
     def plan(
         self,
         prompt: str,
-    ) -> Plan:
+    ) -> list[Plan]:
 
         prompt = prompt.lower()
+
+        plans: list[Plan] = []
+
+        # -----------------------------
+        # Calculator
+        # -----------------------------
 
         if any(
             operator in prompt
@@ -28,22 +35,41 @@ class Planner:
                 "calculate",
             ]
         ):
-            return Plan.CALCULATOR
+            plans.append(Plan.CALCULATOR)
 
-        if "time" in prompt:
-            return Plan.TIME
+        # -----------------------------
+        # Time
+        # -----------------------------
+
+        if any(
+            word in prompt
+            for word in [
+                "time",
+                "clock",
+            ]
+        ):
+            plans.append(Plan.TIME)
+
+        # -----------------------------
+        # Web Search
+        # -----------------------------
 
         if any(
             word in prompt
             for word in [
                 "latest",
                 "today",
-                "news",
-                "current",
                 "recent",
-                "yesterday",
+                "current",
+                "news",
+                "who",
+                "when",
+                "where",
             ]
         ):
-            return Plan.WEB_SEARCH
+            plans.append(Plan.WEB_SEARCH)
 
-        return Plan.NONE
+        if not plans:
+            plans.append(Plan.NONE)
+
+        return plans
