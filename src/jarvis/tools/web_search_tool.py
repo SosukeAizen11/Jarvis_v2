@@ -52,7 +52,12 @@ class WebSearchTool:
             "function": {
                 "name": "web_search",
                 "description": (
-                    "Search the web for recent or factual information."
+                    "Search the web for current, recent, or factual information.\n"
+                    "IMPORTANT:\n"
+                    "- Only provide the 'query' parameter.\n"
+                    "- Do NOT include dates, filters, or any additional arguments.\n"
+                    "- Example:\n"
+                    '{"query":"latest AI news"}'
                 ),
                 "parameters": {
                     "type": "object",

@@ -8,6 +8,7 @@ from jarvis.memory.semantic_memory import SemanticMemory
 from jarvis.tools.registry import ToolRegistry
 from jarvis.planner.planner import Planner, Plan
 from jarvis.services.search_result_formatter import SearchResultFormatter
+from jarvis.documents.retriever import PDFRetriever
 
 
 class ChatService:
@@ -21,6 +22,7 @@ class ChatService:
         conversation: Conversation,
         tools: ToolRegistry,
         semantic_memory: SemanticMemory,
+        pdf_retriever: PDFRetriever,
     ) -> None:
         self.llm = llm
         self.conversation = conversation
@@ -31,6 +33,7 @@ class ChatService:
         self.prompt_builder = PromptBuilder(
             conversation=conversation,
             semantic_memory=semantic_memory,
+            pdf_retriever=pdf_retriever,
         )
 
     def _truncate_tool_result(self, result) -> str:

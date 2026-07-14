@@ -11,11 +11,11 @@ class PDFParser:
 
         document = fitz.open(pdf_path)
 
-        text = ""
+        pages = []
 
         for page in document:
-            text += page.get_text()
+            pages.append(page.get_text())
 
         document.close()
 
-        return text
+        return "\n\n".join(pages)

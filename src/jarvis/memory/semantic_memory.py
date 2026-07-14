@@ -23,7 +23,7 @@ class SemanticMemory:
 
         self.collection = (
             ChromaClient()
-            .get_collection()
+            .get_collection("semantic_memory")
         )
 
     def add(self, text: str) -> None:

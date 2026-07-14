@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     tavily_api_key: str
 
-    default_model: str = "qwen/qwen3-32b"
+    default_model: str = "llama-3.3-70b-versatile"
 
     llm_provider: str = "groq"
     

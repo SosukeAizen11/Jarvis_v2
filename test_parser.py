@@ -1,17 +1,31 @@
 from pathlib import Path
 
 from jarvis.documents.chunker import TextChunker
+from jarvis.documents.indexer import DocumentIndexer
 from jarvis.documents.parser import PDFParser
+from jarvis.documents.retriever import PDFRetriever
+from jarvis.services.embedding_service import EmbeddingService
+
+embedding = EmbeddingService()
 
 parser = PDFParser()
 chunker = TextChunker()
 
-text = parser.parse(
-    Path(r"C:\Users\sumit mandaliya\Documents\Downloads\ARCForge.pdf")
+indexer = DocumentIndexer(
+    parser,
+    chunker,
+    embedding,
 )
 
-chunks = chunker.split(text)
+# Run only once to index the PDF
+indexer.index(
+    Path(r"C:\Users\sumit mandaliya\Documents\Downloads\The Ultimate Python Handbook.pdf")
+)
 
-print(f"Chunks: {len(chunks)}")
-print()
-print(chunks[0])
+retriever = PDFRetriever(embedding)
+
+results = retriever.search(
+    "What is ArcForge?"
+)
+
+print(results)

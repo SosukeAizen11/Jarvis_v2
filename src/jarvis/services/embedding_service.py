@@ -9,12 +9,15 @@ class EmbeddingService:
             "all-MiniLM-L6-v2"
         )
 
-    def embed(self, text: str) -> list[float]:
-        """Convert text into an embedding vector."""
+    def embed(
+        self,
+        text: str | list[str],
+    ) -> list[float] | list[list[float]]:
+        """Generate embeddings for one or many texts."""
 
-        embedding = self.model.encode(
+        embeddings = self.model.encode(
             text,
             convert_to_numpy=True,
         )
 
-        return embedding.tolist()
+        return embeddings.tolist()
