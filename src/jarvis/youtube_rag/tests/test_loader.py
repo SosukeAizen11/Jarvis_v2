@@ -1,23 +1,25 @@
-from jarvis.youtube_rag.loader import YouTubeLoader
-from jarvis.youtube_rag.splitter import TranscriptSplitter
-from jarvis.youtube_rag.vector_store import VectorStore
+from jarvis.youtube_rag.service import YouTubeRAGService
 
 
-def main() -> None:
+def main():
 
-    url = "https://www.youtube.com/watch?v=VzV3gww-nXk"
+    service = YouTubeRAGService()
 
-    loader = YouTubeLoader()
-    documents = loader.load(url)
+    service.index_video(
+        "https://www.youtube.com/watch?v=VzV3gww-nXk"
+    )
 
-    splitter = TranscriptSplitter()
-    chunks = splitter.split(documents)
+    results = service.retrieve(
+        "What is this video all about?"
+    )
 
-    store = VectorStore()
+    print(f"Retrieved {len(results)} chunks\n")
 
-    store.add_documents(chunks)
-
-    print(f"Chunks stored: {store.count()}")
+    for index, document in enumerate(results, start=1):
+        print(f"Chunk {index}")
+        print("-" * 50)
+        print(document.page_content[:300])
+        print()
 
 
 if __name__ == "__main__":

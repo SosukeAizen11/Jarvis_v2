@@ -36,3 +36,26 @@ class VectorStore:
 
     def count(self) -> int:
         return self.store._collection.count()
+    
+    def delete_by_source(self, source: str) -> None:
+        """Delete all chunks belonging to a specific source."""
+
+        self.store._collection.delete(
+            where={"source": source}
+        )
+
+
+    def get_sources(self) -> list[str]:
+        """Return all indexed sources."""
+
+        metadata = self.store._collection.get(
+            include=["metadatas"]
+        )
+
+        return list(
+            {
+                item["source"]
+                for item in metadata["metadatas"]
+                if item and "source" in item
+            }
+        )
