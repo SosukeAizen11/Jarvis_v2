@@ -1,24 +1,23 @@
 from jarvis.youtube_rag.loader import YouTubeLoader
 from jarvis.youtube_rag.splitter import TranscriptSplitter
+from jarvis.youtube_rag.vector_store import VectorStore
+
 
 def main() -> None:
+
     url = "https://www.youtube.com/watch?v=VzV3gww-nXk"
 
     loader = YouTubeLoader()
     documents = loader.load(url)
 
     splitter = TranscriptSplitter()
-
     chunks = splitter.split(documents)
 
-    print(f"Original documents : {len(documents)}")
-    print(f"Chunks created     : {len(chunks)}")
+    store = VectorStore()
 
-    print("\nFirst chunk:\n")
-    print(chunks[0].page_content[:500])
+    store.add_documents(chunks)
 
-    print("\nMetadata:\n")
-    print(chunks[0].metadata)
+    print(f"Chunks stored: {store.count()}")
 
 
 if __name__ == "__main__":
