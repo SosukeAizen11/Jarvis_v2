@@ -1,4 +1,5 @@
 import json
+import logging
 from collections.abc import Generator
 
 from jarvis.builders.prompt_builder import PromptBuilder
@@ -9,7 +10,9 @@ from jarvis.tools.registry import ToolRegistry
 from jarvis.planner.planner import Planner, Plan
 from jarvis.services.search_result_formatter import SearchResultFormatter
 from jarvis.documents.retriever import PDFRetriever
+from jarvis.youtube_rag.retriever import YouTubeRetriever
 
+logger = logging.getLogger(__name__)
 
 class ChatService:
     """Handles AI conversations."""
@@ -23,6 +26,7 @@ class ChatService:
         tools: ToolRegistry,
         semantic_memory: SemanticMemory,
         pdf_retriever: PDFRetriever,
+        youtube_retriever: YouTubeRetriever,
     ) -> None:
         self.llm = llm
         self.conversation = conversation
@@ -30,10 +34,13 @@ class ChatService:
         self.semantic_memory = semantic_memory
         self.planner = Planner()
         self.search_formatter = SearchResultFormatter()
+        self.youtube_retriever = youtube_retriever
         self.prompt_builder = PromptBuilder(
             conversation=conversation,
             semantic_memory=semantic_memory,
             pdf_retriever=pdf_retriever,
+            youtube_retriever=youtube_retriever,
+            
         )
 
     def _truncate_tool_result(self, result) -> str:
@@ -73,19 +80,21 @@ class ChatService:
         messages = self.prompt_builder.build(prompt)
         
         # TO SEE THE PROMPT SEND TO THE LLM
-        # print("\n" + "=" * 60)
-        # print("PROMPT SENT TO THE LLM")
-        # print("=" * 60)
-        # for i, message in enumerate(messages, start=1):
-        #     print(f"\n[{i}] ROLE: {message['role'].upper()}")
-        #     print(message["content"])
-        # print("=" * 60 + "\n")
+        print("\n" + "=" * 60)
+        print("PROMPT SENT TO THE LLM")
+        print("=" * 60)
+        for i, message in enumerate(messages, start=1):
+            print(f"\n[{i}] ROLE: {message['role'].upper()}")
+            print(message["content"])
+        print("=" * 60 + "\n")
         
-        # Store semantic memory
-        self.semantic_memory.add(prompt)
-
         plans = self.planner.plan(prompt)
         print(plans)
+
+        # Store semantic memory (only if not a tool command)
+        is_tool_command = any(plan != Plan.NONE for plan in plans)
+        if not is_tool_command:
+            self.semantic_memory.add(prompt)
 
         tool_definitions = []
         
@@ -105,16 +114,29 @@ class ChatService:
                     self.tools.tools["web_search"].to_groq_tool()
                 )
                 
+            elif plan == Plan.YOUTUBE_INDEX:
+                tool_definitions.append(
+                    self.tools.tools["youtube_index"].to_groq_tool()
+                )
+                
         if not tool_definitions:
             tool_definitions = None
             
         # print(f"Planner selected: {plan}")
         # print(f"Tool definitions: {tool_definitions}")
 
-        response = self.llm.chat(
-            messages,
-            tools=tool_definitions,
-        )
+        try:
+            response = self.llm.chat(
+                messages,
+                tools=tool_definitions,
+            )
+        except Exception:
+            logger.exception("LLM tool call failed")
+            yield (
+                "I'm sorry, I encountered an error processing that request. "
+                "Please try rephrasing your question."
+            )
+            return
         
         print(response.tool_calls)
 

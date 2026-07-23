@@ -16,6 +16,8 @@ from jarvis.documents.service import DocumentService
 from jarvis.memory.semantic_memory import SemanticMemory
 from jarvis.documents.retriever import PDFRetriever
 from jarvis.memory.chroma_client import ChromaClient
+from jarvis.youtube_rag.retriever import YouTubeRetriever
+from jarvis.youtube_rag.vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,23 @@ class Application:
         self.conversation = Conversation(
             system_prompt=(
                 "You are Jarvis, a professional AI assistant. "
-                "Be helpful, concise, and friendly."
+                "Be helpful, concise, and friendly.\n\n"
+                "KNOWLEDGE PRIORITY:\n"
+                "When answering questions, use information in this strict order:\n"
+                "1. Retrieved context from indexed PDFs or YouTube transcripts "
+                "(provided in system messages below).\n"
+                "2. Relevant memories from previous conversations.\n"
+                "3. Current conversation context.\n"
+                "4. Your own training knowledge.\n"
+                "5. Web search results (only when no other source is available).\n\n"
+                "CRITICAL RULES:\n"
+                "- If retrieved context (PDF or YouTube transcript) is present, "
+                "you MUST base your answer on it.\n"
+                "- If the retrieved context does not contain the requested information, "
+                "explicitly state that the retrieved content does not cover that topic. "
+                "Do NOT guess or invent information.\n"
+                "- Never say 'I don't have information' when retrieved context "
+                "is present in this conversation."
             )
         )
 
@@ -60,6 +78,9 @@ class Application:
         self.pdf_retriever = PDFRetriever(
             self.embedding_service
         )
+        
+        self.youtube_store = VectorStore()
+        self.youtube_retriever = YouTubeRetriever(self.youtube_store)
 
         # Chat service (create LAST)
         self.chat_service = ChatService(
@@ -68,6 +89,7 @@ class Application:
             tools=self.tool_registry,
             semantic_memory=self.semantic_memory,
             pdf_retriever=self.pdf_retriever,
+            youtube_retriever=self.youtube_retriever,
         )
         
     def initialize(self) -> None:

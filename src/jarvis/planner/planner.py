@@ -6,6 +6,7 @@ class Plan(Enum):
     CALCULATOR = "calculator"
     TIME = "time"
     WEB_SEARCH = "web_search"
+    YOUTUBE_INDEX = "youtube_index"
 
 
 class Planner:
@@ -20,11 +21,13 @@ class Planner:
 
         plans: list[Plan] = []
 
+        has_url = "http://" in prompt or "https://" in prompt
+
         # -----------------------------
         # Calculator
         # -----------------------------
 
-        if any(
+        if not has_url and any(
             operator in prompt
             for operator in [
                 "+",
@@ -54,7 +57,18 @@ class Planner:
         # Web Search
         # -----------------------------
 
-        if any(
+        references_indexed_content = any(
+            phrase in prompt
+            for phrase in [
+                "this video",
+                "the video",
+                "the transcript",
+                "the speaker",
+                "this transcript",
+            ]
+        )
+
+        if not references_indexed_content and any(
             word in prompt
             for word in [
                 "latest",
@@ -68,6 +82,24 @@ class Planner:
             ]
         ):
             plans.append(Plan.WEB_SEARCH)
+            
+        # -----------------------------
+        # YouTube Index
+        # -----------------------------
+
+        if (
+            ("youtube.com" in prompt or "youtu.be" in prompt)
+            and any(
+                word in prompt
+                for word in [
+                    "index",
+                    "learn",
+                    "remember",
+                    "save",
+                ]
+            )
+        ):
+            plans.append(Plan.YOUTUBE_INDEX)
 
         if not plans:
             plans.append(Plan.NONE)

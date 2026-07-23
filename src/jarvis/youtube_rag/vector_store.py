@@ -13,6 +13,16 @@ from jarvis.youtube_rag.embedding import EmbeddingService
 class VectorStore:
     """Stores transcript chunks in Chroma."""
 
+    _active_source: str | None = None
+
+    @classmethod
+    def set_active_source(cls, source: str) -> None:
+        cls._active_source = source
+
+    @classmethod
+    def get_active_source(cls) -> str | None:
+        return cls._active_source
+
     def __init__(self) -> None:
 
         persist_directory = (

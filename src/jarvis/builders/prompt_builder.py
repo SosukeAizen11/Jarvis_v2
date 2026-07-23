@@ -3,6 +3,7 @@ from datetime import datetime
 from jarvis.documents.retriever import PDFRetriever
 from jarvis.memory.conversation import Conversation
 from jarvis.memory.semantic_memory import SemanticMemory
+from jarvis.youtube_rag.retriever import YouTubeRetriever
 
 
 class PromptBuilder:
@@ -13,10 +14,12 @@ class PromptBuilder:
         conversation: Conversation,
         semantic_memory: SemanticMemory,
         pdf_retriever: PDFRetriever,
+        youtube_retriever: YouTubeRetriever
     ) -> None:
         self.conversation = conversation
         self.semantic_memory = semantic_memory
         self.pdf_retriever = pdf_retriever
+        self.youtube_retriever = youtube_retriever
 
     def build(
         self,
@@ -88,7 +91,12 @@ class PromptBuilder:
         # PDF Knowledge
         # -------------------------------------------------
 
-        pdf_chunks = self.pdf_retriever.search(prompt)
+        prompt_lower = prompt.lower()
+        is_video_query = "video" in prompt_lower or "youtube" in prompt_lower or "transcript" in prompt_lower
+
+        pdf_chunks = []
+        if not is_video_query:
+            pdf_chunks = self.pdf_retriever.search(prompt)
 
         if pdf_chunks:
 
@@ -116,6 +124,41 @@ class PromptBuilder:
 
             insert_index += 1
 
+        # -------------------------------------------------
+        # YouTube Knowledge
+        # -------------------------------------------------
+
+        youtube_documents = self.youtube_retriever.retrieve(prompt)
+
+        if youtube_documents:
+
+            youtube_text = (
+                "Retrieved YouTube Knowledge\n"
+                "---------------------------\n"
+                "The following information was retrieved from indexed YouTube video transcripts.\n"
+                "When it is relevant to the user's question:\n"
+                "- Treat this as factual context from the indexed video.\n"
+                "- Base your answer on this information.\n"
+                "- Do NOT invent information that is not present in the transcript.\n"
+                "- If the transcript does not contain the requested information, clearly say so.\n\n"
+                "Retrieved Transcript:\n\n"
+            )
+
+            youtube_text += "\n\n".join(
+                doc.page_content
+                for doc in youtube_documents
+            )
+
+            messages.insert(
+                insert_index,
+                {
+                    "role": "system",
+                    "content": youtube_text,
+                },
+            )
+
+            insert_index += 1
+        
         # -------------------------------------------------
         # Tool Context
         # -------------------------------------------------

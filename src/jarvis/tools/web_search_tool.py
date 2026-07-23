@@ -52,12 +52,8 @@ class WebSearchTool:
             "function": {
                 "name": "web_search",
                 "description": (
-                    "Search the web for current, recent, or factual information.\n"
-                    "IMPORTANT:\n"
-                    "- Only provide the 'query' parameter.\n"
-                    "- Do NOT include dates, filters, or any additional arguments.\n"
-                    "- Example:\n"
-                    '{"query":"latest AI news"}'
+                    "Search the web for current, recent, or factual information "
+                    "that is not available from other knowledge sources."
                 ),
                 "parameters": {
                     "type": "object",

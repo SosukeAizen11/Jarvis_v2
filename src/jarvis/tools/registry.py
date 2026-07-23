@@ -1,6 +1,7 @@
 from jarvis.tools.calculator_tool import CalculatorTool
 from jarvis.tools.time_tool import TimeTool
 from jarvis.tools.web_search_tool import WebSearchTool
+from jarvis.tools.youtube_index_tool import YouTubeIndexTool
 
 
 class ToolRegistry:
@@ -11,6 +12,7 @@ class ToolRegistry:
             "time": TimeTool(),
             "calculator": CalculatorTool(),
             "web_search": WebSearchTool(),
+            "youtube_index": YouTubeIndexTool(),
         }
         
     def get_tools(self) -> list:

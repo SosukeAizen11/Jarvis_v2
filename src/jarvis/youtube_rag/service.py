@@ -20,6 +20,7 @@ class YouTubeRAGService:
 
         if source:
             self.store.delete_by_source(source)
+            VectorStore.set_active_source(source)
 
         chunks = self.splitter.split(documents)
 

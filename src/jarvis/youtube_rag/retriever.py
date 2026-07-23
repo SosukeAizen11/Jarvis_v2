@@ -25,4 +25,11 @@ class YouTubeRetriever:
         question: str,
     ) -> list[Document]:
 
+        active_source = VectorStore.get_active_source()
+        
+        if active_source:
+            self.retriever.search_kwargs["filter"] = {"source": active_source}
+        else:
+            self.retriever.search_kwargs.pop("filter", None)
+
         return self.retriever.invoke(question)
